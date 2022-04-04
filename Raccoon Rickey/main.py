@@ -15,8 +15,7 @@ YELLOW = (255, 255, 0)
 GRASS = (60,179,113)
 
 #PLAYER
-state = 'idle'
-raccoon = Player(10, HEIGHT-38, 5, state)
+raccoon = Player(10, HEIGHT-38)
 player_group = pygame.sprite.GroupSingle()
 player_group.add(raccoon)
 
@@ -24,8 +23,7 @@ player_group.add(raccoon)
 BLOCK = Platform(WIDTH, 40, 0, HEIGHT - 40, GRASS)
 block_group = pygame.sprite.Group()
 block_group.add(BLOCK)
-
-    
+   
 def window():
     SCREEN.fill(SKY)
     block_group.draw(SCREEN)
@@ -41,20 +39,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    raccoon.movement += raccoon.speed
-                    state = 'run'
-                if event.key == pygame.K_LEFT:
-                    raccoon.movement -= raccoon.speed
-                    state = 'run'
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_RIGHT:
-                    raccoon.movement -= raccoon.speed
-                    state = 'run'
-                if event.key == pygame.K_LEFT:
-                    raccoon.movement += raccoon.speed
-                    state = 'run'
                 
         window()
         player_group.update()

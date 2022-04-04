@@ -1,7 +1,6 @@
+from email.mime import image
 import pygame
-import os
-from Support import *
-
+from classes.Support import import_images_from_folder
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, path, x_pos, y_pos):
@@ -21,65 +20,74 @@ class Platform(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x_pos, y_pos, speed, state):
+    def __init__(self, x_pos, y_pos):
         super().__init__()
         self.import_character_assets()
         self.currentSprite = 0
         self.animation_speed = 0.25
-        self.image = self.animations['idle'][self.currentSprite]
-        self.rect = self.image.get_rect()
-        self.rect.bottomleft = (x_pos, y_pos)
-        
-        self.speed = speed
-        self.movement = 0
-        self.state = state
+        self.image = self.sprite_dict['idle'][self.currentSprite]
+        self.pos = (x_pos, y_pos)
+        self.rect = self.image.get_rect(bottomleft = self.pos)
 
-        if self.state == 'idle':
-            self.idle_state = True
-            self.run_state = False
+        #player movement
+        self.direction = pygame.math.Vector2(0,0)
+        self.speed = 3
+        self.gravity = 0.8
+        self.jump_speed = -16
 
-        if self.state == 'run':
-            self.idle_state = False
-            self.run_state = True
+        #player status
+        self.state = 'idle'
+        self.go_left = False
 
     def import_character_assets(self):
         path = 'raccoon/'
-        self.animations = {'idle':[],'run':[],'jump':[]}
+        self.sprite_dict = {'idle':[], 'walk':[], 'run':[],'jump':[]}
         
-        for animation in self.animations.keys():
+        for animation in self.sprite_dict.keys():
             full_path = path + animation
-            self.animations[animation] = import_images_from_folder(full_path)
+            self.sprite_dict[animation] = import_images_from_folder(full_path)
 
 
-    def animation(self):
+    def animate(self):
+        animation = self.sprite_dict[self.state]
+        self.currentSprite += self.animation_speed
 
-
-
-
-
-
-        if (self.idle_state == True):
-            self.image = self.idle[self.currentSprite]
+        if self.currentSprite >= len(animation):
+            self.currentSprite = 0
             
-        elif (self.run_state == True):
-            self.image = self.run[self.currentSprite]
-            self.rect = self.image.get_rect()
-            self.rect.bottomleft = (x_pos, y_pos)
+        self.image = animation[int(self.currentSprite)]
+
+        if self.go_left:
+            flipped_image = pygame.transform.flip(self.image,True,False)
+            self.image = flipped_image
+        #else:
+            #self.image = self.image
+
+    def jump(self):
+        self.rect.y += self.gravity
+
+    def get_input(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RIGHT]:
+            self.direction.x = 1
+            self.go_left = False
+            self.state = 'walk'
+        elif keys[pygame.K_LEFT]:
+            self.direction.x = -1
+            self.go_left = True
+            self.state = 'walk'
+        else: 
+            self.direction.x = 0
+            self.state = 'idle'
         
+        if keys[pygame.K_UP]:
+            self.jump()
+
     def update(self):
-        self.rect.x += self.movement
+        self.get_input()
+        self.animate()
+        self.rect.x += self.direction.x * self.speed
         if self.rect.left > 900:
             self.rect.right = 0
         if self.rect.right < 0:
             self.rect.left = 900
-
-
-        if self.idle_state == True and int(self.currentSprite) >= len(self.idle):
-            self.currentSprite = 0
-        if self.run_state == True and int(self.currentSprite) >= len(self.run):
-            self.currentSprite = 0
-
-        if self.idle_state == True:
-            self.image = self.idle[int(self.currentSprite)]
-        if self.run_state == True:
-            self.image = self.run[int(self.currentSprite)]
